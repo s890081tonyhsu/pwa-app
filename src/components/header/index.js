@@ -7,13 +7,14 @@ export default class Header extends Component {
 	constructor(props) {
 		super(props);
 		let list = [
-			{ url: '/', name: "Home"},
-			{ url: '/profile', name: "Me"},
-			{ url: '/profile/john', name: "John"}
+			{ url: '/', name: 'Home'},
+			// { url: '/profile', name: 'Me'},
+			// { url: '/profile/john', name: 'John'},
+			{ url: '/imgur', name: 'imgur'}
 		];
 		let idx = list.map(function(item) {
 			return item.url;
-		}).indexOf(location.pathname);
+		}).indexOf(this.props.pathname);
 		this.state = {
 			list: list,
 			tab: idx
@@ -23,7 +24,11 @@ export default class Header extends Component {
 		let list = this.state.list;
 		let idx = list.map(function(item) {
 			return item.url;
-		}).indexOf(location.pathname);
+		}).indexOf(nextProps.pathname);
+		this.setState({
+			list: list,
+			tab: idx
+		});
   	}
 	render() {
 		return (
