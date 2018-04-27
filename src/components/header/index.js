@@ -32,7 +32,7 @@ export default class Header extends Component {
   	}
 	render() {
 		return (
-			<Topbar brand="Amaze UI" toggleNavKey="nav">
+			<Topbar brand="PWA-App" toggleNavKey="nav">
 				<CollapsibleNav eventKey="nav">
 					<Nav topbar>
 						{this.state.list.map((item, index) => {

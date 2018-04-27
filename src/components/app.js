@@ -5,7 +5,7 @@ import createHashHistory from 'history/createHashHistory';
 import Header from './header';
 import Home from './home';
 // import Profile from './profile';
-import Imgur from './imgur/imgur';
+import Imgur from './imgur';
 
 // <Profile path="/profile/" user="me" />
 // <Profile path="/profile/:user" />
