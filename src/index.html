@@ -25,13 +25,13 @@
 		  //If serviceWorker supports, then register it.
 		  if ("serviceWorker" in navigator) {
 		    navigator.serviceWorker.register('./serviceWorker.js', { scope: "./" }) //setting scope of sw
-		    .then(function (registration) {
+		    .then((registration) => {
 		      console.log('Service worker is registered!');
 		    })
-		    .catch(function (error) {
+		    .catch((error) => {
 		      console.error('Service worker failed ', error);
 		    });
 		  }
-  	</script>
+	</script>
 	</body>
 </html>

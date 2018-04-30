@@ -38,7 +38,7 @@ export default class Imgur extends Component {
 		this.props.db.getPouchDocs().then(favorite => {
 			console.log(favorite);
 			this.setState({favorite});
-		})
+		});
 	}
 	onChange(e) {
 		this.setState({
@@ -78,7 +78,7 @@ export default class Imgur extends Component {
 			});
 		});
 	}
-	handleFavorite(imgurId) {
+	handleFavorite(item) {
 		this.setState({
 			isLoading: true
 		});
@@ -86,21 +86,46 @@ export default class Imgur extends Component {
 		console.log(this.state.favorite);
 		if (this.state.favorite && this.state.favorite.length !== 0)
 			favorite_key = this.state.favorite.map(f => f.imgurId);
-		if (favorite_key.indexOf(imgurId) === -1) {
-			this.props.db.addPouchDoc(imgurId, this.state.keyword)
+		if (favorite_key.indexOf(item.id) === -1) {
+			this.props.db.addPouchDoc(item.id, this.state.keyword, item)
 				.then(favorite => {
 					console.log(favorite);
+					this.emitNotify(item.id, true);
 					this.setState({isLoading: false, favorite});
 				});
 		} else {
-			let idx = this.state.favorite[favorite_key.indexOf(imgurId)]['_id'];
+			let idx = this.state.favorite[favorite_key.indexOf(item.id)]['_id'];
 			this.props.db.delPouchDoc(idx)
 				.then(favorite => {
 					console.log('fav: ' + favorite);
+					this.emitNotify(item.id, false);
 					this.setState({isLoading: false, favorite});
 				});
 		}
 
+	}
+	emitNotify(imgurId, add) {
+		const now = Date.now();
+
+		let title = 'Images "' + imgurId;
+		let body = 'You ';
+		const tag = now;
+		const icon = 'http://georgeosddev.github.io/react-web-notification/example/Notifications_button_24.png';
+		if (add) {
+			title += '" Added.';
+			body += 'added an image from favorite at ' + new Date();
+		} else {
+			title += 'Removed.';
+			body += 'removeed an image from favorite at ' + new Date();
+		}
+		const options = {
+			tag,
+			body,
+			icon,
+			lang: 'en',
+			dir: 'ltr'
+		};
+		this.props.notify(title, options);
 	}
 	render() {
 		let favorite_key = [];
@@ -142,7 +167,7 @@ export default class Imgur extends Component {
 								</Button>
 								<Button amStyle={favorite_key.indexOf(item.id) !== -1 ? "danger" : "primary"}
 									disabled={this.state.isLoading}
-									onClick={e => this.handleFavorite(item.id)}>
+									onClick={e => this.handleFavorite(item)}>
 									{favorite_key.indexOf(item.id) !== -1 ? "取消最愛" : "加到最愛"}
 								</Button>
 							</ButtonToolbar>

@@ -12,34 +12,33 @@ export default class Header extends Component {
 			// { url: '/profile/john', name: 'John'},
 			{ url: '/imgur', name: 'imgur'}
 		];
-		let idx = list.map(function(item) {
+		let idx = list.map((item) => {
 			return item.url;
 		}).indexOf(this.props.pathname);
 		this.state = {
-			list: list,
+			list,
 			tab: idx
-		}
+		};
 	}
 	componentWillReceiveProps(nextProps){
 		let list = this.state.list;
-		let idx = list.map(function(item) {
+		let idx = list.map((item) => {
 			return item.url;
 		}).indexOf(nextProps.pathname);
 		this.setState({
-			list: list,
+			list,
 			tab: idx
 		});
-  	}
+	}
 	render() {
 		return (
 			<Topbar brand="PWA-App" toggleNavKey="nav">
 				<CollapsibleNav eventKey="nav">
 					<Nav topbar>
 						{this.state.list.map((item, index) => {
-								if(index === this.state.tab)
-									return (<NavItem active href={item.url}>{item.name}</NavItem>);
-								else
-									return (<NavItem href={item.url}>{item.name}</NavItem>);
+							if (index === this.state.tab)
+								return (<NavItem active href={item.url}>{item.name}</NavItem>);
+							return (<NavItem href={item.url}>{item.name}</NavItem>);
 						})}
 					</Nav>
 				</CollapsibleNav>

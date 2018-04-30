@@ -18,15 +18,17 @@ export default class DB {
 					_id: item.doc._id,
 					imgurId: item.doc.imgurId,
 					keyword: item.doc.keyword,
+					full: item.doc.full
 				})
 			);
 		});
 	}
-	addPouchDoc(imgurId, keyword) {
+	addPouchDoc(imgurId, keyword, full) {
 		if (imgurId.length === 0) return;
 		return localDB.post({
-			imgurId: imgurId,
-			keyword: keyword
+			imgurId,
+			keyword,
+			full
 		}).then(response => {
 			console.log(imgurId + " added to PouchDB.");
 			return this.getPouchDocs();
