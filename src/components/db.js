@@ -1,64 +1,48 @@
-import idb from 'idb';
+import PouchDB from 'pouchdb';
+
+const localDB = new PouchDB('favorite');
 
 export default class DB {
-	constructor(store) {
-		this.state = {
-			name: 'Favorite',
-			data: []
-		};
-
-		this.dbPromise = idb.open('pwaDB', 1, updateDB => {
-			const co = updateDB.createObjectStore('favorite', {
-				keyPath: 'id',
-				autoIncrement: true
-			});
-			co.createIndex('keyword', 'keyword', { unique: false });
-			co.createIndex('imgurId', 'imgurId', { unique: true });
-
-			store.map((item, index) => co.add(item));
-			return co;
-		});
-
-		this.get = this.get.bind(this);
-		this.getAll = this.getAll.bind(this);
-		this.set = this.set.bind(this);
-		this.delete = this.delete.bind(this);
+	constructor() {
+		this.getPouchDocs.bind(this);
+		this.addPouchDoc.bind(this);
+		this.delPouchDoc.bind(this);
 	}
-
-	get(key) {
-		return this.dbPromise.then(db => db
-			.transaction('favorite')
-			.objectStore('favorite')
-			.index('imgurId')
-			.getAll(key)
-			).then(val => console.log(val));
-	}
-
-	getAll() {
-		return this.dbPromise.then(db => {
-			return db
-				.transaction('favorite')
-				.objectStore('favorite');
+	getPouchDocs() {
+		return localDB.allDocs({
+			include_docs: true
+		}).then(response => {
+			console.log('getting updated items from PouchDB.');
+			return response.rows.map(item =>
+				({
+					_id: item.doc._id,
+					imgurId: item.doc.imgurId,
+					keyword: item.doc.keyword,
+				})
+			);
 		});
 	}
-
-	delete(key) {
-		return this.dbPromise.then(db => {
-			const tx = db.transaction('favorite', 'readwrite');
-			tx.objectStore('favorite').delete(key);
-			tx.objectStore('favorite').getAll();
-
-			return tx.complete;
+	addPouchDoc(imgurId, keyword) {
+		if (imgurId.length === 0) return;
+		return localDB.post({
+			imgurId: imgurId,
+			keyword: keyword
+		}).then(response => {
+			console.log(imgurId + " added to PouchDB.");
+			return this.getPouchDocs();
+		}).catch(err => {
+			console.log(err);
 		});
 	}
-
-	set(val) {
-		return this.dbPromise.then(db => {
-			const tx = db.transaction('favorite', 'readwrite');
-			tx.objectStore('favorite').put(val);
-			tx.objectStore('favorite').getAll();
-
-			return tx.complete;
-		})
+	delPouchDoc(idx) {
+		return localDB.get(idx).then(doc => {
+			doc._deleted = true;
+			return localDB.put(doc);
+		}).then(result => {
+			console.log(idx + " gets deleted");
+			return this.getPouchDocs();
+		}).catch(err => {
+			console.log(err);
+		});
 	}
 }

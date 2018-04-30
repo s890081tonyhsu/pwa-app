@@ -11,7 +11,6 @@ import { 	Grid,
 			ButtonToolbar } from 'amazeui-react';
 import XMLHttpRequestPromise from 'xhr-promise';
 import thumbnails from 'imgur-thumbnails';
-import { set, get, del } from 'idb-keyval';
 
 const xhrPromise = new XMLHttpRequestPromise();
 let options = {
@@ -26,15 +25,20 @@ let options = {
 export default class Imgur extends Component {
 	constructor(props) {
 		super(props);
+		console.log(this.props.db);
 		this.state = {
 			isLoading: false,
 			data: [],
 			keyword: '',
-			pos: -1
+			pos: -1,
+			favorite: []
 		};
-		set('hello', 'world', this.props.db)
-			.then(() => console.log('It worked!'))
-			.catch(err => console.log('It failed!', err));
+	}
+	componentDidMount() {
+		this.props.db.getPouchDocs().then(favorite => {
+			console.log(favorite);
+			this.setState({favorite});
+		})
 	}
 	onChange(e) {
 		this.setState({
@@ -74,18 +78,38 @@ export default class Imgur extends Component {
 			});
 		});
 	}
-	handleFavorite(index) {
-		let item = this.state.data[index];
-		set(item.id, this.props.db).then(res => console.log(res));
-		// if (get(item.id, this.props.db) !== null) {
-		// 	set(item.id, item, this.props.db);
-		// } else {
-		// 	del(item.id, this.props.db);
-		// }
+	handleFavorite(imgurId) {
+		this.setState({
+			isLoading: true
+		});
+		let favorite_key = [];
+		console.log(this.state.favorite);
+		if (this.state.favorite && this.state.favorite.length !== 0)
+			favorite_key = this.state.favorite.map(f => f.imgurId);
+		if (favorite_key.indexOf(imgurId) === -1) {
+			this.props.db.addPouchDoc(imgurId, this.state.keyword)
+				.then(favorite => {
+					console.log(favorite);
+					this.setState({isLoading: false, favorite});
+				});
+		} else {
+			let idx = this.state.favorite[favorite_key.indexOf(imgurId)]['_id'];
+			this.props.db.delPouchDoc(idx)
+				.then(favorite => {
+					console.log('fav: ' + favorite);
+					this.setState({isLoading: false, favorite});
+				});
+		}
+
 	}
 	render() {
+		let favorite_key = [];
+		if (this.state.favorite && this.state.favorite.length !== 0)
+			favorite_key = this.state.favorite.map(f => f.imgurId);
+		console.log(favorite_key);
 		let modal = (
-		<Modal title={this.state.pos === -1 ? "" : this.state.data[this.state.pos].title}>
+		<Modal title={this.state.pos === -1 ? "" : this.state.data[this.state.pos].title}
+				onClose={e => this.setState({pos: -1})}>
 			<Image
 				src={this.state.pos === -1 ? "" : this.state.data[this.state.pos].img}
 				style="width: 100%"
@@ -116,9 +140,10 @@ export default class Imgur extends Component {
 									onClick={e => this.onSelected(index)}>
 									查看全圖
 								</Button>
-								<Button amStyle="primary"
-									onClick={e => this.handleFavorite(index)}>
-									{!get(item.id, this.props.db) ? "加到最愛" : "取消最愛"}
+								<Button amStyle={favorite_key.indexOf(item.id) !== -1 ? "danger" : "primary"}
+									disabled={this.state.isLoading}
+									onClick={e => this.handleFavorite(item.id)}>
+									{favorite_key.indexOf(item.id) !== -1 ? "取消最愛" : "加到最愛"}
 								</Button>
 							</ButtonToolbar>
 						</div>}

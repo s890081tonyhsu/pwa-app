@@ -2,8 +2,8 @@ import { h, Component } from 'preact';
 import { Router } from 'preact-router';
 import createHashHistory from 'history/createHashHistory';
 import Notification from 'react-web-notification';
-import { Store } from 'idb-keyval';
 
+import LocalDB from './db';
 import Header from './header';
 import Home from './home';
 // import Profile from './profile';
@@ -11,6 +11,8 @@ import Imgur from './imgur';
 
 // <Profile path="/profile/" user="me" />
 // <Profile path="/profile/:user" />
+
+const localDB = new LocalDB();
 
 export default class App extends Component {
 	constructor() {
@@ -21,7 +23,6 @@ export default class App extends Component {
 			title: ''
 		};
 	}
-	data = new Store('pwaDB', 'favorite')
 	/** Gets fired when the route changes.
 	 *	@param {Object} event		"change" event from [preact-router](http://git.io/preact-router)
 	 *	@param {string} event.url	The newly routed URL
@@ -96,8 +97,8 @@ export default class App extends Component {
 				/>
 				<Header pathname={this.state.pathname} />
 				<Router history={createHashHistory()} onChange={this.handleRoute}>
-					<Home path="/" notify={this.pushNotify.bind(this)} db={this.data} />
-					<Imgur path="/imgur" notify={this.pushNotify.bind(this)} db={this.data} />
+					<Home path="/" notify={this.pushNotify.bind(this)} db={localDB} />
+					<Imgur path="/imgur" notify={this.pushNotify.bind(this)} db={localDB} />
 				</Router>
 			</div>
 		);

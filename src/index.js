@@ -1,6 +1,7 @@
 // import 'lie';
 // import 'isomorphic-fetch';
 import { h, render } from 'preact';
+import 'preact/devtools';
 import './style';
 
 let root;
@@ -12,6 +13,7 @@ function init() {
 init();
 
 if (module.hot) {
+	require('preact/devtools');
 	module.hot.accept('./components/app', () => requestAnimationFrame( () => {
 		flushLogs();
 		init();
