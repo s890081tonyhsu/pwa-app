@@ -1,26 +1,40 @@
+// import 'babel-polyfill';
 import { h, Component } from 'preact';
-import { Grid, Col, Thumbnail, Input, Modal, ModalTrigger, Image } from 'amazeui-react';
+import { 	Grid,
+			Col,
+			Thumbnail,
+			Input,
+			Modal,
+			ModalTrigger,
+			Image,
+			Button,
+			ButtonToolbar } from 'amazeui-react';
 import XMLHttpRequestPromise from 'xhr-promise';
+import thumbnails from 'imgur-thumbnails';
+import { set, get, del } from 'idb-keyval';
 
 const xhrPromise = new XMLHttpRequestPromise();
 let options = {
-  'method': 'GET',
-  'url': 'https://api.imgur.com/3/gallery/search/?q=',
-  'headers': {
-	'Authorization': 'Client-ID d5341581181e338'
-  },
-  'data': ''
+	'method': 'GET',
+	'url': 'https://api.imgur.com/3/gallery/search/?q=',
+	'headers': {
+		'Authorization': 'Client-ID d5341581181e338'
+	},
+	'data': ''
 };
 
 export default class Imgur extends Component {
-	constructor() {
-		super();
+	constructor(props) {
+		super(props);
 		this.state = {
 			isLoading: false,
 			data: [],
 			keyword: '',
 			pos: -1
 		};
+		set('hello', 'world', this.props.db)
+			.then(() => console.log('It worked!'))
+			.catch(err => console.log('It failed!', err));
 	}
 	onChange(e) {
 		this.setState({
@@ -29,7 +43,7 @@ export default class Imgur extends Component {
 	}
 	onSelected(pos) {
 		this.setState({
-			pos: pos
+			pos
 		});
 	}
 	handleClick() {
@@ -46,8 +60,10 @@ export default class Imgur extends Component {
 			let list = results.responseText.data.map(item => {
 				let res = {};
 				let date = new Date(item.datetime);
-				if(item.is_album) res.img = item.images[0].link;
+				res.id = item.id;
+				if (item.is_album) res.img = item.images[0].link;
 				else res.img = item.link;
+				res.thumbnail = thumbnails.small(thumbnails.original(res.img));
 				res.title = item.title;
 				res.desc = date.toLocaleDateString("zh-TW");
 				return res;
@@ -57,6 +73,15 @@ export default class Imgur extends Component {
 				data: list
 			});
 		});
+	}
+	handleFavorite(index) {
+		let item = this.state.data[index];
+		set(item.id, this.props.db).then(res => console.log(res));
+		// if (get(item.id, this.props.db) !== null) {
+		// 	set(item.id, item, this.props.db);
+		// } else {
+		// 	del(item.id, this.props.db);
+		// }
 	}
 	render() {
 		let modal = (
@@ -82,13 +107,22 @@ export default class Imgur extends Component {
 				<Grid>
 					{this.state.data.map((item, index) => <Col sm={12} md={6} lg={3}>
 						<Thumbnail
-						onClick={e => this.onSelected(index)}
 						// style="height: 100px;width: auto;"
 						caption={<div>
 							<h3>{item.title}</h3>
 							<p>{item.desc}</p>
+							<ButtonToolbar>
+								<Button amStyle="default"
+									onClick={e => this.onSelected(index)}>
+									查看全圖
+								</Button>
+								<Button amStyle="primary"
+									onClick={e => this.handleFavorite(index)}>
+									{!get(item.id, this.props.db) ? "加到最愛" : "取消最愛"}
+								</Button>
+							</ButtonToolbar>
 						</div>}
-						src={item.img}/>
+						src={item.thumbnail}/>
 					</Col>)}
 				</Grid>
 				<ModalTrigger

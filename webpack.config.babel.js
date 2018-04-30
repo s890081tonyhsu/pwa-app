@@ -3,8 +3,8 @@ import ExtractTextPlugin from 'extract-text-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import autoprefixer from 'autoprefixer';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
-import OfflinePlugin from 'offline-plugin';
 import path from 'path';
+
 const ENV = process.env.NODE_ENV || 'development';
 
 const CSS_MAPS = ENV!=='production';
@@ -20,166 +20,92 @@ module.exports = {
 	},
 
 	resolve: {
-		extensions: ['.jsx', '.js', '.json', '.less'],
-		modules: [
+		extensions: ['', '.jsx', '.js', '.json', '.less'],
+		modulesDirectories: [
 			path.resolve(__dirname, "src/lib"),
 			path.resolve(__dirname, "node_modules"),
 			'node_modules'
 		],
 		alias: {
-			components: path.resolve(__dirname, "src/components"),    // used for tests
+			components: path.resolve(__dirname, "src/components"),		// used for tests
 			style: path.resolve(__dirname, "src/style"),
-			node_modules: path.resolve(__dirname, "node_modules"),
 			'react': 'preact-compat',
 			'react-dom': 'preact-compat'
 		}
 	},
 
 	module: {
-		rules: [
+		preLoaders: [
 			{
 				test: /\.jsx?$/,
-				exclude: path.resolve(__dirname, 'src'),
-				enforce: 'pre',
-				use: 'source-map-loader'
-			},
+				exclude: /src\//,
+				loader: 'source-map'
+			}
+		],
+		loaders: [
 			{
 				test: /\.jsx?$/,
 				exclude: /node_modules/,
-				use: 'babel-loader'
-			},
-			{
-				// Transform our own .(less|css) files with PostCSS and CSS-modules
-				test: /\.(less|css)$/,
-				include: [path.resolve(__dirname, 'src/components')],
-				use: ExtractTextPlugin.extract({
-					fallback: 'style-loader',
-					use: [
-						{
-							loader: 'css-loader',
-							options: { modules: true, sourceMap: CSS_MAPS, importLoaders: 1, minimize: true }
-						},
-						{
-							loader: `postcss-loader`,
-							options: {
-								sourceMap: CSS_MAPS,
-								plugins: () => {
-									autoprefixer({ browsers: [ 'last 2 versions' ] });
-								}
-							}
-						},
-						{
-							loader: 'less-loader',
-							options: { sourceMap: CSS_MAPS }
-						}
-					]
-				})
+				loader: 'babel'
 			},
 			{
 				test: /\.(less|css)$/,
-				exclude: [path.resolve(__dirname, 'src/components')],
-				use: ExtractTextPlugin.extract({
-					fallback: 'style-loader',
-					use: [
-						{
-							loader: 'css-loader',
-							options: { sourceMap: CSS_MAPS, importLoaders: 1, minimize: true }
-						},
-						{
-							loader: `postcss-loader`,
-							options: {
-								sourceMap: CSS_MAPS,
-								plugins: () => {
-									autoprefixer({ browsers: [ 'last 2 versions' ] });
-								}
-							}
-						},
-						{
-							loader: 'less-loader',
-							options: { sourceMap: CSS_MAPS }
-						}
-					]
-				})
+				include: /src\/components\//,
+				loader: ExtractTextPlugin.extract('style?singleton', [
+					`css?sourceMap=${CSS_MAPS}&modules&importLoaders=1&localIdentName=[local]${process.env.CSS_MODULES_IDENT || '_[hash:base64:5]'}`,
+					'postcss',
+					`less?sourceMap=${CSS_MAPS}`
+				].join('!'))
+			},
+			{
+				test: /\.(less|css)$/,
+				exclude: /src\/components\//,
+				loader: ExtractTextPlugin.extract('style?singleton', [
+					`css?sourceMap=${CSS_MAPS}`,
+					`postcss`,
+					`less?sourceMap=${CSS_MAPS}`
+				].join('!'))
 			},
 			{
 				test: /\.json$/,
-				use: 'json-loader'
+				loader: 'json'
 			},
 			{
 				test: /\.(xml|html|txt|md)$/,
-				use: 'raw-loader'
+				loader: 'raw'
 			},
 			{
 				test: /\.(svg|woff2?|ttf|eot|jpe?g|png|gif)(\?.*)?$/i,
-				use: ENV==='production' ? 'file-loader' : 'url-loader'
+				loader: ENV==='production' ? 'file?name=[path][name]_[hash:base64:5].[ext]' : 'url'
 			}
 		]
 	},
+
+	postcss: () => [
+		autoprefixer({ browsers: 'last 2 versions' })
+	],
+
 	plugins: ([
-		new webpack.NoEmitOnErrorsPlugin(),
-		new ExtractTextPlugin({
-			filename: 'style.css',
+		new webpack.NoErrorsPlugin(),
+		new ExtractTextPlugin('style.css', {
 			allChunks: true,
-			disable: ENV !== 'production'
+			disable: ENV!=='production'
 		}),
+		new webpack.optimize.DedupePlugin(),
 		new webpack.DefinePlugin({
-			'process.env.NODE_ENV': JSON.stringify(ENV)
+			'process.env': JSON.stringify({ NODE_ENV: ENV })
 		}),
 		new HtmlWebpackPlugin({
-			template: './index.ejs',
+			template: './index.html',
 			minify: { collapseWhitespace: true }
 		}),
 		new CopyWebpackPlugin([
+			{ from: './serviceWorker.js', to: './' },
 			{ from: './manifest.json', to: './' },
 			{ from: './favicon.ico', to: './' }
 		])
 	]).concat(ENV==='production' ? [
-		new webpack.optimize.UglifyJsPlugin({
-			output: {
-				comments: false
-			},
-			compress: {
-				unsafe_comps: true,
-				properties: true,
-				keep_fargs: false,
-				pure_getters: true,
-				collapse_vars: true,
-				unsafe: true,
-				warnings: false,
-				screw_ie8: true,
-				sequences: true,
-				dead_code: true,
-				drop_debugger: true,
-				comparisons: true,
-				conditionals: true,
-				evaluate: true,
-				booleans: true,
-				loops: true,
-				unused: true,
-				hoist_funs: true,
-				if_return: true,
-				join_vars: true,
-				cascade: true,
-				drop_console: true
-			}
-		}),
-
-		new OfflinePlugin({
-			relativePaths: false,
-			AppCache: false,
-			excludes: ['_redirects'],
-			ServiceWorker: {
-				events: true
-			},
-			cacheMaps: [
-				{
-					match: /.*/,
-					to: '/',
-					requestTypes: ['navigate']
-				}
-			],
-			publicPath: '/'
-		})
+		new webpack.optimize.OccurenceOrderPlugin()
 	] : []),
 
 	stats: { colors: true },
@@ -198,16 +124,16 @@ module.exports = {
 	devServer: {
 		port: process.env.PORT || 8080,
 		host: 'localhost',
+		colors: true,
 		publicPath: '/',
 		contentBase: './src',
 		historyApiFallback: true,
 		open: true,
-		openPage: '',
 		proxy: {
 			// OPTIONAL: proxy configuration:
 			// '/optional-prefix/**': { // path pattern to rewrite
-			//   target: 'http://target-host.com',
-			//   pathRewrite: path => path.replace(/^\/[^\/]+\//, '')   // strip first path segment
+			//	 target: 'http://target-host.com',
+			//	 pathRewrite: path => path.replace(/^\/[^\/]+\//, '')   // strip first path segment
 			// }
 		}
 	}

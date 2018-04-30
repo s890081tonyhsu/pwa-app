@@ -1,13 +1,28 @@
-# Preact Boilerplate / Starter Kit [![Build Status](https://travis-ci.org/developit/preact-boilerplate.svg?branch=master)](https://travis-ci.org/developit/preact-boilerplate) [![Preact Slack Community](https://preact-slack.now.sh/badge.svg)](https://preact-slack.now.sh)
+# Preact PWA Boilerplate / Starter Kit
 
-:guitar: Ready-to-rock [Preact] starter project, powered by [webpack]. **[(View Demo)](https://preact-boilerplate.surge.sh)**
+[![Build Status](https://travis-ci.org/gokulkrishh/preact-pwa-boilerplate.svg?branch=master)](https://travis-ci.org/gokulkrishh/preact-pwa-boilerplate)
+[![gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/developit/preact)
 
-> ### :rocket: Note: We now recommend [Preact CLI](https://github.com/developit/preact-cli/) for new projects.
+> :guitar: Ready-to-rock [Preact] starter project, powered by [webpack].
 >
-> [Preact CLI](https://github.com/developit/preact-cli/) is a natural evolution of this boilerplate, and improves on it in every way. In a single dependency, you get a friendly command line project creation and build tool with development & production modes. Preact CLI requires _no configuration at all_, and even does **automatic code-splitting** without you lifting a finger!  It also produces bundles roughly half the size of preact-boilerplate.
+> :rocket: If you're starting a new project using [Preact], you've come to the right place.
+Below is a step-by-step guide that takes you straight from downloading this boilerplate to production.
+>
+> **[:boom: View Demo :boom:](https://preact-pwa.surge.sh)**
+
 
 ---
 
+## What changes are done?
+
+Added ```serviceWorker``` for offline support, ```manifest.json``` file for add to homescreen support, cool icons from preact site and updated preact to latest version(7.1.0) + yarn ;). Rest all the same!!
+
+Thanks to [Jason Miller](https://github.com/developit) for writing a simple and awesome boilerplate.
+
+## What else do you want?
+
+- [ ] - Travis with lighthouse support
+- [ ] - Feel free to create issue and make this repo awesome ;)
 
 # Quick-Start Guide
 
@@ -16,7 +31,6 @@
 - [Structure](#structure)
 - [CSS Modules](#css-modules)
 - [Handling URLS](#handling-urls)
-- [React Compatibility](#react-compatibility)
 
 
 ## Installation
@@ -65,8 +79,6 @@ npm run dev
 npm test
 ```
 
-> 🌟 This also instruments the code in `src/` using [isparta](https://github.com/douglasduteil/isparta), giving you pretty code coverage statistics at the end of your tests! If you want to see detailed coverage information, a full HTML report is placed into `coverage/`.
-
 **6. Generate a production build in `./build`:**
 
 ```sh
@@ -76,13 +88,9 @@ npm run build
 > You can now deploy the contents of the `build` directory to production!
 >
 > **[Surge.sh](https://surge.sh) Example:** `surge ./build -d my-app.surge.sh`
-> 
-> **[Netlify](https://www.netlify.com/docs/cli/) Example:** `netlify deploy`
->
-> [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/developit/preact-boilerplate)
 
 
-**5. Start local production server with [serve](https://github.com/zeit/serve):**
+**5. Start local production server with `superstatic`:**
 
 ```sh
 npm start
@@ -161,18 +169,10 @@ Defining what component(s) to load for a given URL is easy and declarative. You 
 ---
 
 
-## React Compatibility
-
-This project includes [preact-compat] alias in as `react` and `react-dom` right out-of-the-box.  This means you can install and use third-party React components, and they will use Preact automatically!  It also means that if you _don't_ install third-party React components, `preact-compat` doesn't get included in your JavaScript bundle - it's free if you don't use it 👍
-
----
-
-
 ## License
 
 MIT
 
 
-[Preact]: https://github.com/developit/preact
-[preact-compat]: https://github.com/developit/preact-compat
+[Preact]: https://developit.github.io/preact
 [webpack]: https://webpack.github.io
