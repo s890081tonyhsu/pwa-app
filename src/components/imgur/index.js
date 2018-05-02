@@ -1,4 +1,3 @@
-// import 'babel-polyfill';
 import { h, Component } from 'preact';
 import { 	Grid,
 			Col,
@@ -11,6 +10,7 @@ import { 	Grid,
 			ButtonToolbar } from 'amazeui-react';
 import XMLHttpRequestPromise from 'xhr-promise';
 import thumbnails from 'imgur-thumbnails';
+import style from './style.less';
 
 const xhrPromise = new XMLHttpRequestPromise();
 let options = {
@@ -149,7 +149,7 @@ export default class Imgur extends Component {
 								className={this.state.isLoading ? "am-btn am-btn-default" : "am-btn am-btn-primary"}
 								disabled={this.state.isLoading}
 								onClick={e => this.handleClick()}>
-								{this.state.isLoading ? "讀取中" : "取得"}
+								{this.state.isLoading ? "Loading" : "Get"}
 							</button>} />
 					</div>
 				</div>
@@ -163,12 +163,12 @@ export default class Imgur extends Component {
 							<ButtonToolbar>
 								<Button amStyle="default"
 									onClick={e => this.onSelected(index)}>
-									查看全圖
+									<i class="am-icon-expand" aria-hidden="true"></i>
 								</Button>
 								<Button amStyle={favorite_key.indexOf(item.id) !== -1 ? "danger" : "primary"}
 									disabled={this.state.isLoading}
 									onClick={e => this.handleFavorite(item)}>
-									{favorite_key.indexOf(item.id) !== -1 ? "取消最愛" : "加到最愛"}
+									{favorite_key.indexOf(item.id) !== -1 ? <i class="am-icon-star" aria-hidden="true"></i> : <i class="am-icon-star-o" aria-hidden="true"></i>}
 								</Button>
 							</ButtonToolbar>
 						</div>}
